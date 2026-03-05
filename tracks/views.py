@@ -105,3 +105,35 @@ class PopularityDistributionView(APIView):
         })
 
 
+class TopTracksView(APIView):
+    def get(self, request):
+        qs = Track.objects.all()
+        params = request.query_params
+
+        # Optional filters
+        genre = params.get('genre')
+        artist = params.get('artist')
+
+        if genre:
+            qs = qs.filter(track_genre__icontains=genre)
+        if artist:
+            qs = qs.filter(artists__icontains=artist)
+
+        # Limit parameter (default = 10)
+        limit = params.get('limit')
+        try:
+            limit = int(limit) if limit else 10
+        except ValueError:
+            limit = 10
+
+        # Order by popularity descending
+        qs = qs.order_by('-popularity')[:limit]
+
+        serializer = TrackSerializer(qs, many=True)
+
+        return Response({
+            "limit": limit,
+            "results": serializer.data
+        })
+
+
