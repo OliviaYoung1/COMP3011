@@ -19,6 +19,12 @@ class PlaylistTrackCreateView(generics.CreateAPIView):
     queryset = PlaylistTrack.objects.all()
     serializer_class = PlaylistTrackSerializer
 
+
+class PlaylistTrackDeleteView(generics.DestroyAPIView):
+    queryset = PlaylistTrack.objects.all()
+    serializer_class = PlaylistTrackSerializer
+
+
 class TrackDetailView(generics.RetrieveAPIView):
     queryset = Track.objects.all()
     serializer_class = TrackSerializer
