@@ -5,7 +5,10 @@ from .views import (
     PopularityDistributionView,
     TopTracksView,
     GenrePopularityView,
-    GenreEnergyDanceabilityView
+    GenreEnergyDanceabilityView,
+    PlaylistListCreateView,
+    PlaylistDetailView,
+    PlaylistTrackCreateView,
 )
 
 
@@ -16,4 +19,7 @@ urlpatterns = [
     path('analytics/top-tracks/', TopTracksView.as_view(), name='top-tracks'),
     path('analytics/genre-popularity/', GenrePopularityView.as_view(), name='genre-popularity'),
     path('analytics/genre-energy-danceability/', GenreEnergyDanceabilityView.as_view(), name='genre-energy-danceability'),
+    path('playlists/', PlaylistListCreateView.as_view(), name='playlist-list-create'),
+    path('playlists/<int:pk>/', PlaylistDetailView.as_view(), name='playlist-detail'),
+    path('playlists/add-track/', PlaylistTrackCreateView.as_view(), name='playlist-add-track'),
 ]

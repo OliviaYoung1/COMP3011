@@ -26,3 +26,17 @@ class Track(models.Model):
     def __str__(self):
         return f"{self.track_name} by {self.artists}"
 
+class Playlist(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+class PlaylistTrack(models.Model):
+    playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE, related_name='tracks')
+    track = models.ForeignKey(Track, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.playlist.name} - {self.track.track_name}"

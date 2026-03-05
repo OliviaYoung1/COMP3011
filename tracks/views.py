@@ -1,12 +1,23 @@
 from django.shortcuts import render
 # tracks/views.py
 from rest_framework import generics
-from .models import Track
-from .serializers import TrackSerializer
+from .models import Track, Playlist, PlaylistTrack
+from .serializers import TrackSerializer, PlaylistSerializer, PlaylistTrackSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Avg, Min, Max, Count
 
+class PlaylistListCreateView(generics.ListCreateAPIView):
+    queryset = Playlist.objects.all()
+    serializer_class = PlaylistSerializer
+
+class PlaylistDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Playlist.objects.all()
+    serializer_class = PlaylistSerializer
+
+class PlaylistTrackCreateView(generics.CreateAPIView):
+    queryset = PlaylistTrack.objects.all()
+    serializer_class = PlaylistTrackSerializer
 
 class TrackDetailView(generics.RetrieveAPIView):
     queryset = Track.objects.all()
