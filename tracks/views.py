@@ -5,7 +5,7 @@ from .models import Track
 from .serializers import TrackSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.db.models import Avg, Min, Max
+from django.db.models import Avg, Min, Max, Count
 
 
 class TrackDetailView(generics.RetrieveAPIView):
@@ -104,7 +104,6 @@ class PopularityDistributionView(APIView):
             "buckets": buckets
         })
 
-
 class TopTracksView(APIView):
     def get(self, request):
         qs = Track.objects.all()
@@ -136,4 +135,66 @@ class TopTracksView(APIView):
             "results": serializer.data
         })
 
+class GenrePopularityView(APIView):
+    def get(self, request):
+        params = request.query_params
 
+        # Minimum number of tracks required for a genre to appear
+        min_tracks = params.get('min_tracks')
+        try:
+            min_tracks = int(min_tracks) if min_tracks else 1
+        except ValueError:
+            min_tracks = 1
+
+        # Base aggregation
+        qs = (
+            Track.objects
+            .values('track_genre')
+            .annotate(
+                avg_popularity=Avg('popularity'),
+                avg_energy=Avg('energy'),
+                avg_danceability=Avg('danceability'),
+                avg_valence=Avg('valence'),
+                track_count=Count('track_id')
+            )
+            .filter(track_count__gte=min_tracks)
+        )
+
+        # Optional ordering
+        order = params.get('order_by')
+        if order:
+            qs = qs.order_by(order)
+
+        return Response({"results": list(qs)})
+
+class GenreEnergyDanceabilityView(APIView):
+    def get(self, request):
+        params = request.query_params
+
+        # Minimum number of tracks required for a genre to appear
+        min_tracks = params.get('min_tracks')
+        try:
+            min_tracks = int(min_tracks) if min_tracks else 1
+        except ValueError:
+            min_tracks = 1
+
+        # Base aggregation
+        qs = (
+            Track.objects
+            .values('track_genre')
+            .annotate(
+                avg_energy=Avg('energy'),
+                avg_danceability=Avg('danceability'),
+                avg_valence=Avg('valence'),
+                avg_tempo=Avg('tempo'),
+                track_count=Count('track_id')
+            )
+            .filter(track_count__gte=min_tracks)
+        )
+
+        # ordering
+        order = params.get('order_by')
+        if order:
+            qs = qs.order_by(order)
+
+        return Response({"results": list(qs)})
