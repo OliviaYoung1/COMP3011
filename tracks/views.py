@@ -1,3 +1,107 @@
 from django.shortcuts import render
+# tracks/views.py
+from rest_framework import generics
+from .models import Track
+from .serializers import TrackSerializer
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.db.models import Avg, Min, Max
 
-# Create your views here.
+
+class TrackDetailView(generics.RetrieveAPIView):
+    queryset = Track.objects.all()
+    serializer_class = TrackSerializer
+    lookup_field = 'track_id'
+
+class TrackListView(generics.ListAPIView):
+    serializer_class = TrackSerializer
+
+    def get_queryset(self):
+        qs = Track.objects.all()
+        params = self.request.query_params
+
+        # Text filters
+        artist = params.get('artist')
+        genre = params.get('genre')
+        track_name = params.get('track_name')
+
+        # Numeric filters
+        min_pop = params.get('min_popularity')
+        max_pop = params.get('max_popularity')
+        min_tempo = params.get('min_tempo')
+        max_tempo = params.get('max_tempo')
+
+        # Boolean filter
+        explicit = params.get('explicit')
+
+        # Apply filters
+        if artist:
+            qs = qs.filter(artists__icontains=artist)
+        if genre:
+            qs = qs.filter(track_genre__icontains=genre)
+        if track_name:
+            qs = qs.filter(track_name__icontains=track_name)
+
+        if min_pop:
+            qs = qs.filter(popularity__gte=min_pop)
+        if max_pop:
+            qs = qs.filter(popularity__lte=max_pop)
+
+        if min_tempo:
+            qs = qs.filter(tempo__gte=min_tempo)
+        if max_tempo:
+            qs = qs.filter(tempo__lte=max_tempo)
+
+        if explicit in ['true', 'false']:
+            qs = qs.filter(explicit=(explicit == 'true'))
+
+        # Ordering
+        order = params.get('order_by')
+        if order:
+            qs = qs.order_by(order)
+
+        return qs
+
+class TopTracksView(generics.ListAPIView):
+    serializer_class = TrackSerializer
+
+    def get_queryset(self):
+        return Track.objects.order_by('-popularity')[:10]
+
+class PopularityDistributionView(APIView):
+    def get(self, request):
+        qs = Track.objects.all()
+
+        # Summary statistics
+        summary = qs.aggregate(
+            mean=Avg('popularity'),
+            min=Min('popularity'),
+            max=Max('popularity')
+        )
+
+        # Median (manual because SQLite has no built-in median)
+        values = list(qs.values_list('popularity', flat=True))
+        values.sort()
+        n = len(values)
+        median = values[n // 2] if n % 2 == 1 else (values[n // 2 - 1] + values[n // 2]) / 2
+
+        # Buckets
+        buckets = [
+            {"range": "0-20", "count": qs.filter(popularity__gte=0, popularity__lt=20).count()},
+            {"range": "20-40", "count": qs.filter(popularity__gte=20, popularity__lt=40).count()},
+            {"range": "40-60", "count": qs.filter(popularity__gte=40, popularity__lt=60).count()},
+            {"range": "60-80", "count": qs.filter(popularity__gte=60, popularity__lt=80).count()},
+            {"range": "80-100", "count": qs.filter(popularity__gte=80, popularity__lte=100).count()},
+        ]
+
+        return Response({
+            "summary": {
+                "mean": summary["mean"],
+                "median": median,
+                "min": summary["min"],
+                "max": summary["max"]
+            },
+            "buckets": buckets
+        })
+
+
