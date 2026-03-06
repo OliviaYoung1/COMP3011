@@ -126,13 +126,52 @@ function msToMinSec(ms) {
    API FUNCTIONS
    ───────────────────────────────────────────── */
 
-async function loadTopTracks() {
-    const container = document.getElementById("top-tracks-list");
-    container.innerHTML = '<div class="loading-pulse"><span></span><span></span><span></span></div>';
+async function loadFilteredTracks() {
+    const params = new URLSearchParams();
 
-    const response = await fetch(`${API_BASE}/analytics/top-tracks/`);
+    const genre = document.getElementById("filter-genre").value.trim();
+    const minDance = document.getElementById("filter-min-dance").value.trim();
+    const minEnergy = document.getElementById("filter-min-energy").value.trim();
+    const minValence = document.getElementById("filter-min-valence").value.trim();
+    const minTempo = document.getElementById("filter-min-tempo").value.trim();
+    const explicit = document.getElementById("filter-explicit").value;
+
+    if (genre) params.append("genre", genre);
+    if (minDance) params.append("min_danceability", minDance);
+    if (minEnergy) params.append("min_energy", minEnergy);
+    if (minValence) params.append("min_valence", minValence);
+    if (minTempo) params.append("min_tempo", minTempo);
+    if (explicit) params.append("explicit", explicit);
+
+    params.append("limit", "10");
+
+    const response = await fetch(`${API_BASE}/analytics/top-tracks/?${params}`);
     const data = await response.json();
-    renderTopTracks(data.results);
+
+    console.log("Filtered tracks:", data);
+
+    renderFilteredTracks(data.results);
+}
+
+function renderFilteredTracks(tracks) {
+    const tbody = document.getElementById("top-tracks-body");
+    tbody.innerHTML = "";
+
+    tracks.forEach((track, index) => {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${track.track_name}</td>
+            <td>${track.artists}</td>
+            <td>${track.track_genre || "-"}</td>
+            <td>${track.popularity}</td>
+            <td>${track.danceability?.toFixed(2)}</td>
+            <td>${track.energy?.toFixed(2)}</td>
+        `;
+
+        tbody.appendChild(tr);
+    });
 }
 
 async function loadPlaylists() {
@@ -199,6 +238,8 @@ async function removeTrack(playlistTrackId) {
     loadPlaylists();
 }
 
+
+
 /* ─────────────────────────────────────────────
    DROPDOWN + SEARCH
    ───────────────────────────────────────────── */
@@ -264,9 +305,33 @@ function selectTrack(id, name) {
     document.getElementById("track-results").innerHTML = "";
 }
 
+function selectTrackFromExplorer(trackId, trackName) {
+    selectedTrack = trackId;
+    document.getElementById("track-search").value = trackName;
+    document.getElementById("track-results").innerHTML = "";
+    document.getElementById("add-track").scrollIntoView({ behavior: "smooth" });
+}
+
+async function loadGenres() {
+    const response = await fetch(`${API_BASE}/analytics/genres/`);
+    const data = await response.json();
+
+    const select = document.getElementById("filter-genre");
+    select.innerHTML = `<option value="">Any</option>`; // reset
+
+    data.genres.forEach(genre => {
+        const option = document.createElement("option");
+        option.value = genre;
+        option.textContent = genre;
+        select.appendChild(option);
+    });
+}
+
+
 /* ─────────────────────────────────────────────
    INIT
    ───────────────────────────────────────────── */
-loadTopTracks();
+loadGenres();
+loadFilteredTracks();
 loadPlaylists();
 loadDropdownData();

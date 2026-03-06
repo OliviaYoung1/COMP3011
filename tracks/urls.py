@@ -10,6 +10,7 @@ from .views import (
     PlaylistDetailView,
     PlaylistTrackCreateView,
     PlaylistTrackDeleteView,
+    GenreListView,
 )
 
 
@@ -24,4 +25,5 @@ urlpatterns = [
     path('playlists/<int:pk>/', PlaylistDetailView.as_view(), name='playlist-detail'),
     path('playlists/add-track/', PlaylistTrackCreateView.as_view(), name='playlist-add-track'),
     path('playlists/remove-track/<int:pk>/', PlaylistTrackDeleteView.as_view(), name='playlist-remove-track'),
+    path("analytics/genres/", GenreListView.as_view()),
 ]

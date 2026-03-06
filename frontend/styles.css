@@ -514,6 +514,76 @@ button {
   text-align: center;
 }
 
+/* ─── Filter Panel Styling (Slim Version) ─── */
+.filters-panel {
+  padding: 16px 24px 20px;
+  background: var(--surface-3);
+  border-bottom: 1px solid var(--border);
+
+  /* Smaller min width so everything fits on one line */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 14px 16px;
+}
+
+/* Each filter group */
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Labels */
+.filter-group label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Inputs + selects */
+.filters-panel input,
+.filters-panel select {
+  width: 100%;
+  background: var(--surface-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px; /* slimmer */
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Focus glow */
+.filters-panel input:focus,
+.filters-panel select:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px var(--green-glow);
+}
+
+/* Dropdown arrow */
+.filters-panel select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B6B6B' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+/* Options */
+.filters-panel select option {
+  background: var(--surface-3);
+  color: var(--text-primary);
+}
+
+/* Apply Filters button sits below the grid */
+.filters-panel + .btn-primary {
+  margin: 0 24px 20px;
+  width: calc(100% - 48px);
+}
+
 /* ─── Loading State ─── */
 .loading-pulse {
   display: flex;
@@ -547,3 +617,4 @@ button {
   .form-body { padding: 16px 20px 20px; }
   #playlist-list { padding: 0 16px 20px; }
 }
+

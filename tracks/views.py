@@ -19,11 +19,9 @@ class PlaylistTrackCreateView(generics.CreateAPIView):
     queryset = PlaylistTrack.objects.all()
     serializer_class = PlaylistTrackSerializer
 
-
 class PlaylistTrackDeleteView(generics.DestroyAPIView):
     queryset = PlaylistTrack.objects.all()
     serializer_class = PlaylistTrackSerializer
-
 
 class TrackDetailView(generics.RetrieveAPIView):
     queryset = Track.objects.all()
@@ -83,12 +81,69 @@ class TrackListView(generics.ListAPIView):
 
         return qs
 
-class TopTracksView(generics.ListAPIView):
-    serializer_class = TrackSerializer
+class TopTracksView(APIView):
+    def get(self, request):
+        qs = Track.objects.all()
+        p = request.query_params
 
-    def get_queryset(self):
-        return Track.objects.order_by('-popularity')[:10]
+        # --- numeric filters ---
+        def apply_num(param, field, cast):
+            val = p.get(param)
+            if val:
+                try:
+                    return {field: cast(val)}
+                except ValueError:
+                    return {}
+            return {}
 
+        num_map = [
+            ('min_popularity', 'popularity__gte', int),
+            ('max_popularity', 'popularity__lte', int),
+            ('min_danceability', 'danceability__gte', float),
+            ('max_danceability', 'danceability__lte', float),
+            ('min_energy', 'energy__gte', float),
+            ('max_energy', 'energy__lte', float),
+            ('min_valence', 'valence__gte', float),
+            ('max_valence', 'valence__lte', float),
+            ('min_tempo', 'tempo__gte', float),
+            ('max_tempo', 'tempo__lte', float),
+        ]
+
+        for param, field, cast in num_map:
+            filt = apply_num(param, field, cast)
+            if filt:
+                qs = qs.filter(**filt)
+
+        # --- text filters ---
+        if p.get('genre'):
+            qs = qs.filter(track_genre__icontains=p['genre'])
+        if p.get('artist'):
+            qs = qs.filter(artists__icontains=p['artist'])
+        if p.get('track_name'):
+            qs = qs.filter(track_name__icontains=p['track_name'])
+
+        # --- explicit filter ---
+        explicit = p.get('explicit')
+        if explicit in ['true', 'false']:
+            qs = qs.filter(explicit=(explicit == 'true'))
+
+        # --- ordering + limit ---
+        qs = qs.order_by('-popularity')
+
+        limit = p.get('limit')
+        try:
+            limit = int(limit) if limit else 10
+        except ValueError:
+            limit = 10
+
+        qs = qs[:limit]
+
+        serializer = TrackSerializer(qs, many=True)
+        return Response({
+            "limit": limit,
+            "results": serializer.data
+        })
+    
 class PopularityDistributionView(APIView):
     def get(self, request):
         qs = Track.objects.all()
@@ -123,37 +178,6 @@ class PopularityDistributionView(APIView):
                 "max": summary["max"]
             },
             "buckets": buckets
-        })
-
-class TopTracksView(APIView):
-    def get(self, request):
-        qs = Track.objects.all()
-        params = request.query_params
-
-        # Optional filters
-        genre = params.get('genre')
-        artist = params.get('artist')
-
-        if genre:
-            qs = qs.filter(track_genre__icontains=genre)
-        if artist:
-            qs = qs.filter(artists__icontains=artist)
-
-        # Limit parameter (default = 10)
-        limit = params.get('limit')
-        try:
-            limit = int(limit) if limit else 10
-        except ValueError:
-            limit = 10
-
-        # Order by popularity descending
-        qs = qs.order_by('-popularity')[:limit]
-
-        serializer = TrackSerializer(qs, many=True)
-
-        return Response({
-            "limit": limit,
-            "results": serializer.data
         })
 
 class GenrePopularityView(APIView):
@@ -219,3 +243,13 @@ class GenreEnergyDanceabilityView(APIView):
             qs = qs.order_by(order)
 
         return Response({"results": list(qs)})
+    
+class GenreListView(APIView):
+    def get(self, request):
+        genres = (
+            Track.objects
+            .values_list('track_genre', flat=True)
+            .distinct()
+            .order_by('track_genre')
+        )
+        return Response({"genres": list(genres)})

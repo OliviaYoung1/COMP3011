@@ -20,20 +20,70 @@
   <main>
 
     <!-- ─── TOP TRACKS ─── -->
-    <section id="top-tracks">
-      <div class="section-header">
-        <h2>
-          <span class="icon">🎵</span>
-          Top Tracks
-        </h2>
-      </div>
-      <div id="top-tracks-list">
-        <div class="loading-pulse">
-          <span></span><span></span><span></span>
-        </div>
-      </div>
-    </section>
+     <section id="top-tracks">
+  <div class="section-header">
+    <h2>
+      <span class="icon">🎵</span>
+      Track Explorer
+    </h2>
+  </div>
 
+  <div class="filters-panel">
+    <div class="filter-group">
+      <label>Genre</label>
+      <select id="filter-genre">
+        <option value="">Any</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Min Danceability</label>
+      <input id="filter-min-dance" type="number" min="0" max="1" step="0.1">
+    </div>
+
+    <div class="filter-group">
+      <label>Min Energy</label>
+      <input id="filter-min-energy" type="number" min="0" max="1" step="0.1">
+    </div>
+
+    <div class="filter-group">
+      <label>Min Valence</label>
+      <input id="filter-min-valence" type="number" min="0" max="1" step="0.1">
+    </div>
+
+    <div class="filter-group">
+      <label>Min Tempo</label>
+      <input id="filter-min-tempo" type="number" min="0" max="250">
+    </div>
+
+    <div class="filter-group">
+      <label>Explicit</label>
+      <select id="filter-explicit">
+        <option value="">Any</option>
+        <option value="false">Clean only</option>
+        <option value="true">Explicit only</option>
+      </select>
+    </div>
+
+    <button class="btn-primary" onclick="loadFilteredTracks()">Apply Filters</button>
+  </div>
+
+  <table class="tracks-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Track</th>
+        <th>Artist</th>
+        <th>Genre</th>
+        <th>Popularity</th>
+        <th>Danceability</th>
+        <th>Energy</th>
+      </tr>
+    </thead>
+    <tbody id="top-tracks-body"></tbody>
+  </table>
+</section>
+    
     <!-- ─── CREATE + ADD (side by side) ─── -->
     <div class="two-col-row">
 
