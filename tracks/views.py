@@ -1,6 +1,6 @@
 from django.shortcuts import render
 # tracks/views.py
-from rest_framework import generics
+from rest_framework import generics, filters
 from .models import Track, Playlist, PlaylistTrack
 from .serializers import TrackSerializer, PlaylistSerializer, PlaylistTrackSerializer
 from rest_framework.views import APIView
@@ -37,21 +37,26 @@ class TrackListView(generics.ListAPIView):
         qs = Track.objects.all()
         params = self.request.query_params
 
-        # Text filters
+        # --- SEARCH FOR TRACKS  ---
+        search = params.get('search')
+        if search:
+            return (
+                Track.objects
+                .filter(track_name__icontains=search)
+                .order_by('-popularity')[:5]
+            )
+
         artist = params.get('artist')
         genre = params.get('genre')
         track_name = params.get('track_name')
 
-        # Numeric filters
         min_pop = params.get('min_popularity')
         max_pop = params.get('max_popularity')
         min_tempo = params.get('min_tempo')
         max_tempo = params.get('max_tempo')
 
-        # Boolean filter
         explicit = params.get('explicit')
 
-        # Apply filters
         if artist:
             qs = qs.filter(artists__icontains=artist)
         if genre:
@@ -72,7 +77,6 @@ class TrackListView(generics.ListAPIView):
         if explicit in ['true', 'false']:
             qs = qs.filter(explicit=(explicit == 'true'))
 
-        # Ordering
         order = params.get('order_by')
         if order:
             qs = qs.order_by(order)
