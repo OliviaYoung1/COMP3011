@@ -1,26 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Spotify Analytics Frontend</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
 <body>
 
-    <h1>Spotify API Frontend</h1>
+    <h1>Spotify Analytics Dashboard</h1>
 
+    <!-- TOP TRACKS SECTION -->
+    <section id="top-tracks">
+        <h2>Top Tracks</h2>
+        <div id="top-tracks-list">Loading...</div>
+    </section>
+
+    <!-- PLAYLIST CREATION -->
     <section id="create-playlist">
-        <h2>Create Playlist</h2>
+        <h2>Create a New Playlist</h2>
         <input id="playlist-name" placeholder="Playlist name">
         <input id="playlist-description" placeholder="Description">
-        <button onclick="createPlaylist()">Create</button>
+        <button onclick="createPlaylist()">Create Playlist</button>
     </section>
 
-    <section id="playlists">
-        <h2>Your Playlists</h2>
-        <div id="playlist-list"></div>
-    </section>
-
+    <!-- ADD TRACK TO PLAYLIST -->
     <section id="add-track">
         <h2>Add Track to Playlist</h2>
         <input id="playlist-id" placeholder="Playlist ID">
@@ -28,6 +24,11 @@
         <button onclick="addTrack()">Add Track</button>
     </section>
 
+    <!-- ALL PLAYLISTS -->
+    <section id="playlists">
+        <h2>Your Playlists</h2>
+        <div id="playlist-list"></div>
+    </section>
+
     <script src="app.js"></script>
 </body>
-</html>

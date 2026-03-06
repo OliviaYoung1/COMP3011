@@ -5,14 +5,21 @@ body {
 
 section {
     margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+#top-tracks-list div {
+    margin-bottom: 8px;
 }
 
 .playlist {
     border: 1px solid #ccc;
     padding: 15px;
-    margin-bottom: 15px;
     border-radius: 8px;
+    margin-bottom: 20px;
 }
+
 
 button {
     margin-top: 5px;

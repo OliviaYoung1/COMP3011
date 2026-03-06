@@ -31,7 +31,7 @@ async function loadPlaylists() {
             <p>${p.description}</p>
             <p><strong>ID:</strong> ${p.id}</p>
 
-            <h4>Tracks:</h4>
+            <h4>Songs in this playlist:</h4>
             <ul>
                 ${p.tracks.map(t => `
                     <li>
@@ -77,5 +77,30 @@ async function removeTrack(playlistTrackId) {
     loadPlaylists();
 }
 
+// LOAD TOP TRACKS
+async function loadTopTracks() {
+    const response = await fetch(`${API_BASE}/analytics/top-tracks/`);
+    const data = await response.json();
+
+    // Extract the array correctly
+    const tracks = data.results;
+
+    const container = document.getElementById("top-tracks-list");
+    container.innerHTML = "";
+
+    tracks.forEach(track => {
+        const div = document.createElement("div");
+        div.className = "top-track";
+
+        div.innerHTML = `
+            <p><strong>${track.track_name}</strong> — ${track.artists} (Popularity: ${track.popularity})</p>
+        `;
+
+        container.appendChild(div);
+    });
+}
+
 // Load playlists on page load
+loadTopTracks();
 loadPlaylists();
+
