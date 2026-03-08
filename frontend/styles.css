@@ -617,6 +617,17 @@ button {
   40%            { transform: scale(1); opacity: 1; }
 }
 
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  filter: invert(1);
+  opacity: 0.3;
+}
+
+input[type="number"]::-webkit-inner-spin-button:hover,
+input[type="number"]::-webkit-outer-spin-button:hover {
+  opacity: 0.7;
+}
+
 /* ─── Responsive ─── */
 @media (max-width: 768px) {
   main { padding: 24px 16px 0; }
@@ -626,4 +637,3 @@ button {
   .form-body { padding: 16px 20px 20px; }
   #playlist-list { padding: 0 16px 20px; }
 }
-
