@@ -4,20 +4,15 @@ const API_BASE = "http://127.0.0.1:8000/api";
    RENDERERS
    ───────────────────────────────────────────── */
 
-function renderFilteredTracks(tracks) {
-    const tbody = document.getElementById("top-tracks-body");
+function renderTopTracks(tracks) {
+    const container = document.getElementById("top-tracks-list");
 
     if (!tracks || tracks.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="8" style="text-align:center;padding:28px;color:var(--text-muted);font-size:14px;">
-                    No tracks match your filters.
-                </td>
-            </tr>`;
+        container.innerHTML = '<p style="padding:20px 28px;color:var(--text-muted);font-size:14px;">No tracks found.</p>';
         return;
     }
 
-    tbody.innerHTML = tracks.map((track, i) => `
+    const rows = tracks.map((track, i) => `
         <tr>
             <td>
                 <span class="track-num">${i + 1}</span>
@@ -28,11 +23,12 @@ function renderFilteredTracks(tracks) {
                     <div class="track-art-placeholder">♪</div>
                     <div>
                         <div class="track-name">${track.track_name}</div>
+                        <div class="track-artist">${track.artists}</div>
                     </div>
                 </div>
             </td>
-            <td class="track-artist">${track.artists ?? "—"}</td>
-            <td>${track.track_genre ?? "—"}</td>
+            <td>${track.album_name ?? "—"}</td>
+            <td>${track.duration_ms ? msToMinSec(track.duration_ms) : "—"}</td>
             <td>
                 <div class="popularity-bar">
                     <div class="bar-track">
@@ -41,15 +37,22 @@ function renderFilteredTracks(tracks) {
                     <span>${track.popularity ?? 0}</span>
                 </div>
             </td>
-            <td>${track.danceability?.toFixed(2) ?? "—"}</td>
-            <td>${track.energy?.toFixed(2) ?? "—"}</td>
-            <td>
-                <button class="btn-select" onclick="selectTrackFromExplorer('${track.track_id}', '${track.track_name.replace(/'/g, "\\'")}')">
-                    Add
-                </button>
-            </td>
         </tr>`
     ).join("");
+
+    container.innerHTML = `
+        <table class="tracks-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Title</th>
+                    <th>Album</th>
+                    <th>Duration</th>
+                    <th>Popularity</th>
+                </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+        </table>`;
 }
 
 function renderPlaylists(playlists) {
@@ -124,34 +127,51 @@ function msToMinSec(ms) {
    ───────────────────────────────────────────── */
 
 async function loadFilteredTracks() {
-    const tbody = document.getElementById("top-tracks-body");
-    tbody.innerHTML = `
-        <tr>
-            <td colspan="8" style="padding:20px 0;">
-                <div class="loading-pulse"><span></span><span></span><span></span></div>
-            </td>
-        </tr>`;
-
     const params = new URLSearchParams();
 
-    const genre    = document.getElementById("filter-genre").value.trim();
+    const genre = document.getElementById("filter-genre").value.trim();
     const minDance = document.getElementById("filter-min-dance").value.trim();
-    const minEnergy= document.getElementById("filter-min-energy").value.trim();
-    const minVal   = document.getElementById("filter-min-valence").value.trim();
+    const minEnergy = document.getElementById("filter-min-energy").value.trim();
+    const minValence = document.getElementById("filter-min-valence").value.trim();
     const minTempo = document.getElementById("filter-min-tempo").value.trim();
     const explicit = document.getElementById("filter-explicit").value;
 
-    if (genre)    params.append("genre", genre);
+    if (genre) params.append("genre", genre);
     if (minDance) params.append("min_danceability", minDance);
-    if (minEnergy)params.append("min_energy", minEnergy);
-    if (minVal)   params.append("min_valence", minVal);
+    if (minEnergy) params.append("min_energy", minEnergy);
+    if (minValence) params.append("min_valence", minValence);
     if (minTempo) params.append("min_tempo", minTempo);
     if (explicit) params.append("explicit", explicit);
+
     params.append("limit", "10");
 
     const response = await fetch(`${API_BASE}/analytics/top-tracks/?${params}`);
     const data = await response.json();
+
+    console.log("Filtered tracks:", data);
+
     renderFilteredTracks(data.results);
+}
+
+function renderFilteredTracks(tracks) {
+    const tbody = document.getElementById("top-tracks-body");
+    tbody.innerHTML = "";
+
+    tracks.forEach((track, index) => {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${track.track_name}</td>
+            <td>${track.artists}</td>
+            <td>${track.track_genre || "-"}</td>
+            <td>${track.popularity}</td>
+            <td>${track.danceability?.toFixed(2)}</td>
+            <td>${track.energy?.toFixed(2)}</td>
+        `;
+
+        tbody.appendChild(tr);
+    });
 }
 
 async function loadPlaylists() {
@@ -229,7 +249,7 @@ function refreshPlaylistDropdown(playlists) {
     playlists.forEach(p => {
         const option = document.createElement("option");
         option.value = p.id;
-        option.textContent = `${p.name}`;
+        option.textContent = `${p.name} (ID: ${p.id})`;
         playlistSelect.appendChild(option);
     });
 }
@@ -243,24 +263,10 @@ async function loadDropdownData() {
 function filterPlaylists() {
     const search = document.getElementById("playlist-search").value.toLowerCase();
     const options = document.getElementById("playlist-select").options;
+
     for (let opt of options) {
         opt.style.display = opt.textContent.toLowerCase().includes(search) ? "" : "none";
     }
-}
-
-async function loadGenres() {
-    const response = await fetch(`${API_BASE}/analytics/genres/`);
-    const data = await response.json();
-
-    const select = document.getElementById("filter-genre");
-    select.innerHTML = `<option value="">Any</option>`;
-
-    data.genres.forEach(genre => {
-        const option = document.createElement("option");
-        option.value = genre;
-        option.textContent = genre;
-        select.appendChild(option);
-    });
 }
 
 let selectedTrack = null;
@@ -302,6 +308,21 @@ function selectTrackFromExplorer(trackId, trackName) {
     document.getElementById("track-search").value = trackName;
     document.getElementById("track-results").innerHTML = "";
     document.getElementById("add-track").scrollIntoView({ behavior: "smooth" });
+}
+
+async function loadGenres() {
+    const response = await fetch(`${API_BASE}/analytics/genres/`);
+    const data = await response.json();
+
+    const select = document.getElementById("filter-genre");
+    select.innerHTML = `<option value="">Any</option>`; // reset
+
+    data.genres.forEach(genre => {
+        const option = document.createElement("option");
+        option.value = genre;
+        option.textContent = genre;
+        select.appendChild(option);
+    });
 }
 
 /* ─────────────────────────────────────────────

@@ -23,11 +23,6 @@ class PlaylistTrackDeleteView(generics.DestroyAPIView):
     queryset = PlaylistTrack.objects.all()
     serializer_class = PlaylistTrackSerializer
 
-class TrackDetailView(generics.RetrieveAPIView):
-    queryset = Track.objects.all()
-    serializer_class = TrackSerializer
-    lookup_field = 'track_id'
-
 class TrackListView(generics.ListAPIView):
     serializer_class = TrackSerializer
 
@@ -143,106 +138,6 @@ class TopTracksView(APIView):
             "limit": limit,
             "results": serializer.data
         })
-    
-class PopularityDistributionView(APIView):
-    def get(self, request):
-        qs = Track.objects.all()
-
-        # Summary statistics
-        summary = qs.aggregate(
-            mean=Avg('popularity'),
-            min=Min('popularity'),
-            max=Max('popularity')
-        )
-
-        # Median (manual because SQLite has no built-in median)
-        values = list(qs.values_list('popularity', flat=True))
-        values.sort()
-        n = len(values)
-        median = values[n // 2] if n % 2 == 1 else (values[n // 2 - 1] + values[n // 2]) / 2
-
-        # Buckets
-        buckets = [
-            {"range": "0-20", "count": qs.filter(popularity__gte=0, popularity__lt=20).count()},
-            {"range": "20-40", "count": qs.filter(popularity__gte=20, popularity__lt=40).count()},
-            {"range": "40-60", "count": qs.filter(popularity__gte=40, popularity__lt=60).count()},
-            {"range": "60-80", "count": qs.filter(popularity__gte=60, popularity__lt=80).count()},
-            {"range": "80-100", "count": qs.filter(popularity__gte=80, popularity__lte=100).count()},
-        ]
-
-        return Response({
-            "summary": {
-                "mean": summary["mean"],
-                "median": median,
-                "min": summary["min"],
-                "max": summary["max"]
-            },
-            "buckets": buckets
-        })
-
-class GenrePopularityView(APIView):
-    def get(self, request):
-        params = request.query_params
-
-        # Minimum number of tracks required for a genre to appear
-        min_tracks = params.get('min_tracks')
-        try:
-            min_tracks = int(min_tracks) if min_tracks else 1
-        except ValueError:
-            min_tracks = 1
-
-        # Base aggregation
-        qs = (
-            Track.objects
-            .values('track_genre')
-            .annotate(
-                avg_popularity=Avg('popularity'),
-                avg_energy=Avg('energy'),
-                avg_danceability=Avg('danceability'),
-                avg_valence=Avg('valence'),
-                track_count=Count('track_id')
-            )
-            .filter(track_count__gte=min_tracks)
-        )
-
-        # Optional ordering
-        order = params.get('order_by')
-        if order:
-            qs = qs.order_by(order)
-
-        return Response({"results": list(qs)})
-
-class GenreEnergyDanceabilityView(APIView):
-    def get(self, request):
-        params = request.query_params
-
-        # Minimum number of tracks required for a genre to appear
-        min_tracks = params.get('min_tracks')
-        try:
-            min_tracks = int(min_tracks) if min_tracks else 1
-        except ValueError:
-            min_tracks = 1
-
-        # Base aggregation
-        qs = (
-            Track.objects
-            .values('track_genre')
-            .annotate(
-                avg_energy=Avg('energy'),
-                avg_danceability=Avg('danceability'),
-                avg_valence=Avg('valence'),
-                avg_tempo=Avg('tempo'),
-                track_count=Count('track_id')
-            )
-            .filter(track_count__gte=min_tracks)
-        )
-
-        # ordering
-        order = params.get('order_by')
-        if order:
-            qs = qs.order_by(order)
-
-        return Response({"results": list(qs)})
     
 class GenreListView(APIView):
     def get(self, request):
