@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'tracks',
     'ml',
     'corsheaders',
+    "drf_yasg",
 ]
 
 MIDDLEWARE = [
