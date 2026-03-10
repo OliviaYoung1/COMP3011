@@ -113,3 +113,10 @@ Then open
 ```
 http://127.0.0.1:5500/index.html
 ```
+
+## API Documentation
+
+Full API documentation is available in the following PDF:
+
+📄 **[API_Documentation.pdf](docs/API_Documentation.pdf)**
+
