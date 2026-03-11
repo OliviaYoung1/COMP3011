@@ -1,3 +1,4 @@
+//GenAI Declearation: Code was written with help by ClaudeAI- All generated suggestions were reviewed and adapted by me before implementing them.
 const API_BASE = "http://127.0.0.1:8000/api";
 
 /* ─────────────────────────────────────────────

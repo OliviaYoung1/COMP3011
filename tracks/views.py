@@ -1,5 +1,6 @@
-from django.shortcuts import render
 # tracks/views.py
+#GenAI Declearation: Code was written with help by Copilot- All generated suggestions were reviewed and adapted by me before implementing them.
+from django.shortcuts import render
 from rest_framework import generics, filters
 from .models import Track, Playlist, PlaylistTrack
 from .serializers import TrackSerializer, PlaylistSerializer, PlaylistTrackSerializer

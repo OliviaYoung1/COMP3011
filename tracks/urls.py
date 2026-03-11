@@ -1,3 +1,4 @@
+#GenAI Declearation: Code was written with help by Copilot- All generated suggestions were reviewed and adapted by me before implementing them.
 from django.urls import path
 from .views import (
     TrackListView,
