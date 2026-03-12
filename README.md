@@ -76,7 +76,7 @@ cd COMP3011/spotify_api
 ```bash
 python -m venv venv
 ```
-macOS / Linus
+macOS / Linux
 ```bash
 source venv/bin/activate
 ```
@@ -104,9 +104,9 @@ The API will be available at:
 http://127.0.0.1:8000/api/
 ```
 ### Running the Frontend
-From inside the frontend folder, run:
+Open a new terminal and do the following:
 ```bash
-cd frontend
+cd COMP3011/frontend/
 python -m http.server 5500
 ```
 Then open
