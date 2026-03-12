@@ -113,10 +113,11 @@ Then open
 ```
 http://127.0.0.1:5500/index.html
 ```
+## Technical Report
+**[Technical_Report.pdf](docs/Technical_Report.pdf)**
 
 ## API Documentation
+**[API_Documentation.pdf](docs/API_Documentation.pdf)**
 
-Full API documentation is available in the following PDF:
-
-📄 **[API_Documentation.pdf](docs/API_Documentation.pdf)**
-
+## Presentation Slides
+**[Powerpoint_slides.pptx](docs/Powerpoint_Slides.pptx)**
