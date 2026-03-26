@@ -86,7 +86,8 @@ venv\Scripts\activate
 ```
 ### 3. Install dependencies
 ```bash
-cd .. && pip install -r requirements.txt
+cd ..
+pip install -r requirements.txt
 ```
 
 ### 4. Apply migrations
